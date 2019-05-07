@@ -10,13 +10,12 @@ import android.support.v7.widget.RecyclerView
 import android.telephony.SmsManager
 import android.view.View
 import android.widget.EditText
-import kotlinx.android.synthetic.main.activity_main.*
 
 const val PERMISSION_REQUEST_SEND_SMS = 1
 const val DESTINATION = "3197593722"
 class MainActivity : AppCompatActivity() {
 
-    val messages = arrayListOf(Message("Hello there."), Message("How are you?"), Message("I am fine."))
+    val messages = arrayListOf(Message("Hello there.", "Bob"), Message("How are you?", "You"), Message("I am fine.", "Bob"))
     val adapter = MessageAdapter(messages)
     var messageList : RecyclerView? = null
 
@@ -66,7 +65,7 @@ class MainActivity : AppCompatActivity() {
                 null, null
             )
             val newPos = messages.size
-            messages.add(Message(message))
+            messages.add(Message(message, getString(R.string.you)))
             adapter.notifyItemInserted(newPos)
             messageList!!.scrollToPosition(newPos)
 

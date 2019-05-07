@@ -2,4 +2,5 @@
     <string name="app_name">UniText</string>
     <string name="message_hint">Send an SMS Message . . .</string>
     <string name="send">SMS</string>
+    <string name="you">You</string>
 </resources>

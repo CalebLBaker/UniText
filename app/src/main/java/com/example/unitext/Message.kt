@@ -1,3 +1,5 @@
 package com.example.unitext
 
-class Message(val text : String)
+import java.util.*
+
+class Message(val text : String, val sender : String, val time : Calendar = Calendar.getInstance())
