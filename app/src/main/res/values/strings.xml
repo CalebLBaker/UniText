@@ -3,4 +3,6 @@
     <string name="message_hint">Send an SMS Message . . .</string>
     <string name="send">SMS</string>
     <string name="you">You</string>
+    <string name="fail">Failed to send SMS message</string>
+    <string name="sms_send_content_description">Send SMS Message</string>
 </resources>

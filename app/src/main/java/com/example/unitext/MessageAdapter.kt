@@ -1,11 +1,9 @@
 package com.example.unitext
 
-import android.provider.CalendarContract
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.TextView
 import java.util.*
 
@@ -43,25 +41,26 @@ class MessageAdapter(private val messages : List<Message>) : RecyclerView.Adapte
         var showing = false
         val currYear = currentDate.get(Calendar.YEAR)
         if (currYear != prev.get(Calendar.YEAR)) {
-            year = ", $currYear "
+            year = ", $currYear | "
             showing = true
         }
         val currDay = currentDate.get(Calendar.DAY_OF_MONTH)
         if (showing || currDay != prev.get(Calendar.DAY_OF_MONTH) || currentDate.get(Calendar.MONTH) != prev.get(Calendar.MONTH)) {
             day = currentDate.getDisplayName(Calendar.MONTH, Calendar.SHORT, locale) + " " + currDay.toString()
-            if (!showing) day += " "
+            if (!showing) day += " | "
             showing = true
         }
         if (showing || currentDate.get(Calendar.AM_PM) != prev.get(Calendar.AM_PM)) {
             pm = " " + currentDate.getDisplayName(Calendar.AM_PM, Calendar.SHORT, locale)
             showing = true
         }
-        val currHour = currentDate.get(Calendar.HOUR)
+        var currHour = currentDate.get(Calendar.HOUR)
         val currMinute = currentDate.get(Calendar.MINUTE)
         if (showing || currMinute != prev.get(Calendar.MINUTE) || currHour != prev.get(Calendar.HOUR)) {
-            time = "$currHour:$currMinute"
+            if (currHour == 0) currHour = 12
+            time = String.format("$currHour:%02d", currMinute)
         }
-        viewHolder.timeView.text = day + year + time + pm
+        viewHolder.timeView.text = String.format("%s%s%s%s", day, year, time, pm)
     }
 
     override fun getItemCount() = messages.size
