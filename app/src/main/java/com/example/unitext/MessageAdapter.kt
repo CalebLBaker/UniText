@@ -24,13 +24,12 @@ class MessageAdapter(private val messages : List<Message>) : RecyclerView.Adapte
         val msg = messages[position]
         viewHolder.textView.text = msg.text
         viewHolder.senderView.text = msg.sender
-        val prev = if (position != 0) {
+        val prev = Calendar.getInstance()
+        prev.time = if (position != 0) {
             messages[position-1].time
         }
         else {
-            val cal = Calendar.getInstance()
-            cal.time = Date(0)
-            cal
+            Date(0)
         }
         val locale = Locale.getDefault()
         val currentDate = msg.time
@@ -39,23 +38,25 @@ class MessageAdapter(private val messages : List<Message>) : RecyclerView.Adapte
         var time = ""
         var pm = ""
         var showing = false
-        val currYear = currentDate.get(Calendar.YEAR)
+        val currCal = Calendar.getInstance()
+        currCal.time = currentDate
+        val currYear = currCal.get(Calendar.YEAR)
         if (currYear != prev.get(Calendar.YEAR)) {
             year = ", $currYear | "
             showing = true
         }
-        val currDay = currentDate.get(Calendar.DAY_OF_MONTH)
-        if (showing || currDay != prev.get(Calendar.DAY_OF_MONTH) || currentDate.get(Calendar.MONTH) != prev.get(Calendar.MONTH)) {
-            day = currentDate.getDisplayName(Calendar.MONTH, Calendar.SHORT, locale) + " " + currDay.toString()
+        val currDay = currCal.get(Calendar.DAY_OF_MONTH)
+        if (showing || currDay != prev.get(Calendar.DAY_OF_MONTH) || currCal.get(Calendar.MONTH) != prev.get(Calendar.MONTH)) {
+            day = currCal.getDisplayName(Calendar.MONTH, Calendar.SHORT, locale) + " " + currDay.toString()
             if (!showing) day += " | "
             showing = true
         }
-        if (showing || currentDate.get(Calendar.AM_PM) != prev.get(Calendar.AM_PM)) {
-            pm = " " + currentDate.getDisplayName(Calendar.AM_PM, Calendar.SHORT, locale)
+        if (showing || currCal.get(Calendar.AM_PM) != prev.get(Calendar.AM_PM)) {
+            pm = " " + currCal.getDisplayName(Calendar.AM_PM, Calendar.SHORT, locale)
             showing = true
         }
-        var currHour = currentDate.get(Calendar.HOUR)
-        val currMinute = currentDate.get(Calendar.MINUTE)
+        var currHour = currCal.get(Calendar.HOUR)
+        val currMinute = currCal.get(Calendar.MINUTE)
         if (showing || currMinute != prev.get(Calendar.MINUTE) || currHour != prev.get(Calendar.HOUR)) {
             if (currHour == 0) currHour = 12
             time = String.format("$currHour:%02d", currMinute)

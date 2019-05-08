@@ -25,21 +25,26 @@ const val DESTINATION = "3197593722"
 const val PDU_TYPE = "pdus"
 class MainActivity : AppCompatActivity() {
 
-    private val messages = arrayListOf(Message("Hello there.", "Bob"), Message("How are you?", "You"), Message("I am fine.", "Bob"))
-    private val adapter = MessageAdapter(messages)
     private var messageList : RecyclerView? = null
     private val smsManager = SmsManager.getDefault()
-    internal var smsReceiver : BroadcastReceiver? = null
+    private var smsReceiver : BroadcastReceiver? = null
+    var dbHelper : UnitextDbHelper? = null
+    private var messages : ArrayList<Message>? = null
+    private var adapter : MessageAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        dbHelper = UnitextDbHelper(applicationContext)
+        messages = dbHelper!!.query()
+        adapter = MessageAdapter(messages!!)
         registerReceiver()
         messageList = findViewById(R.id.message_list)
         messageList!!.adapter = adapter
         messageList!!.layoutManager = LinearLayoutManager(this)
         actionBar?.title = "Bob"
         supportActionBar?.title = "Bob"
+        messageList!!.scrollToPosition(messages!!.size - 1)
     }
 
     fun sendMessage(view : View) {
@@ -61,7 +66,7 @@ class MainActivity : AppCompatActivity() {
                     sendSms()
                 }
                 else {
-                    // permission denied
+                    Toast.makeText(applicationContext, getString(R.string.permission_denied), Toast.LENGTH_LONG).show()
                 }
                 return
             }
@@ -81,7 +86,9 @@ class MainActivity : AppCompatActivity() {
                     DESTINATION, null, it,
                     null, null
                 )
-                addMessage(Message(it, getString(R.string.you)))
+                val msg = Message(it, getString(R.string.you))
+                dbHelper!!.insertWithName(msg)
+                addMessage(msg)
                 editText.clear()
             }
             catch (e : Exception) {
@@ -91,13 +98,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun addMessage(msg : Message) {
-        val newPos = messages.size
-        messages.add(msg)
-        adapter.notifyItemInserted(newPos)
+        val newPos = messages!!.size
+        messages!!.add(msg)
+        adapter!!.notifyItemInserted(newPos)
         messageList!!.scrollToPosition(newPos)
     }
 
-    fun registerReceiver() {
+    private fun registerReceiver() {
         smsReceiver = object : BroadcastReceiver() {
 
             @TargetApi(Build.VERSION_CODES.M)
@@ -105,7 +112,6 @@ class MainActivity : AppCompatActivity() {
                 val bundle = intent.extras
                 if (bundle != null) {
                     val msgs: Array<SmsMessage>
-                    var strMessage = ""
                     val format = bundle.getString("format")
                     val pdus = bundle.get(PDU_TYPE) as Array<*>?
                     if (pdus != null) {
@@ -119,7 +125,9 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                         for (j in 0 until msgs.size) {
-                            addMessage(Message(msgs[j].messageBody, msgs[j].originatingAddress!!))
+                            val msg = Message(msgs[j].messageBody, msgs[j].originatingAddress!!)
+                            dbHelper!!.insertWithNumber(msg)
+                            addMessage(msg)
                         }
                     }
                 }

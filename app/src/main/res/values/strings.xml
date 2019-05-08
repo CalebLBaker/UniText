@@ -5,4 +5,5 @@
     <string name="you">You</string>
     <string name="fail">Failed to send SMS message</string>
     <string name="sms_send_content_description">Send SMS Message</string>
+    <string name="permission_denied">Cannot send SMS message: permission denied</string>
 </resources>

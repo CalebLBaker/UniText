@@ -32,7 +32,7 @@ CREATE TABLE ${Message.TABLE_NAME} (${BaseColumns._ID} INTEGER PRIMARY KEY,
                                     ${Message.SENDER} INTEGER,
                                     ${Message.TEXT} TEXT,
                                     ${Message.TIME} DATETIME,
-FOREIGN KEY ${Message.SENDER} REFERENCES ${Contact.TABLE_NAME}(${BaseColumns._ID}))
+FOREIGN KEY(${Message.SENDER}) REFERENCES ${Contact.TABLE_NAME}(${BaseColumns._ID}))
 """
 
     const val DELETE_MESSAGE_TABLE = """
