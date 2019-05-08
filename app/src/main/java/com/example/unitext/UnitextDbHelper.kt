@@ -24,14 +24,19 @@ class UnitextDbHelper(context : Context) : SQLiteOpenHelper(context, DATABASE_NA
         onUpgrade(db, oldVersion, newVersion)
     }
 
-    fun insertWithNumber(msg : Message) {
+    fun insertWithNumber(msg : Message) : String {
         val db = writableDatabase
         val cursor = db.query(DatabaseConstants.Contact.TABLE_NAME,
-                              arrayOf(BaseColumns._ID),
+                              arrayOf(BaseColumns._ID, DatabaseConstants.Contact.NAME),
                               "${DatabaseConstants.Contact.NUMBER} = ?",
                               arrayOf(msg.sender),
                               null, null, null)
+        var senderName = msg.sender
         val sender = if (cursor.moveToNext()) {
+            val nameTmp = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseConstants.Contact.NAME))
+            if (nameTmp != null) {
+                senderName = nameTmp
+            }
             cursor.getLong(cursor.getColumnIndexOrThrow(BaseColumns._ID))
         }
         else {
@@ -43,6 +48,7 @@ class UnitextDbHelper(context : Context) : SQLiteOpenHelper(context, DATABASE_NA
         }
         cursor.close()
         insert(msg, sender)
+        return senderName
     }
 
     fun insertWithName(msg : Message) {
@@ -82,6 +88,29 @@ class UnitextDbHelper(context : Context) : SQLiteOpenHelper(context, DATABASE_NA
                 ret.add(Message(getString(getColumnIndexOrThrow(DatabaseConstants.Message.TEXT)),
                                 sender,
                                 Date(getLong(getColumnIndexOrThrow(DatabaseConstants.Message.TIME)))))
+            }
+        }
+        return ret
+    }
+
+    fun queryRecent(lastMessage : Date) : ArrayList<Message> {
+        val cursor = readableDatabase.query("""${DatabaseConstants.Message.TABLE_NAME} JOIN ${DatabaseConstants.Contact.TABLE_NAME}
+                                               ON ${DatabaseConstants.Message.TABLE_NAME}.${DatabaseConstants.Message.SENDER} = ${DatabaseConstants.Contact.TABLE_NAME}.${BaseColumns._ID}""",
+                                            arrayOf(DatabaseConstants.Message.TEXT, DatabaseConstants.Message.TIME, DatabaseConstants.Contact.NAME, DatabaseConstants.Contact.NUMBER),
+                                            "${DatabaseConstants.Message.TIME} > ?",
+                                            arrayOf(lastMessage.time.toString()),
+                                            null, null,
+                                            "${DatabaseConstants.Message.TIME} ASC")
+        val ret = ArrayList<Message>()
+        with(cursor) {
+            while(moveToNext()) {
+                var sender = getString(getColumnIndexOrThrow(DatabaseConstants.Contact.NAME))
+                if (sender == null) {
+                    sender = getString(getColumnIndexOrThrow(DatabaseConstants.Contact.NUMBER))
+                }
+                ret.add(Message(getString(getColumnIndexOrThrow(DatabaseConstants.Message.TEXT)),
+                    sender,
+                    Date(getLong(getColumnIndexOrThrow(DatabaseConstants.Message.TIME)))))
             }
         }
         return ret

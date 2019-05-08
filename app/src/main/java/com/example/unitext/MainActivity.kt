@@ -19,6 +19,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import java.lang.Exception
+import java.util.*
 
 const val PERMISSION_REQUEST_SEND_SMS = 1
 const val DESTINATION = "3197593722"
@@ -104,6 +105,21 @@ class MainActivity : AppCompatActivity() {
         messageList!!.scrollToPosition(newPos)
     }
 
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(smsReceiver, IntentFilter(NEW_SMS_INTENT))
+
+        val start = messages!!.size
+        val newMessages = dbHelper!!.queryRecent(messages!!.last().time)
+        val numNew = newMessages.size
+        if (numNew != 0) {
+            messages!!.addAll(newMessages)
+            adapter!!.notifyItemRangeInserted(start, numNew)
+            messageList!!.scrollToPosition(start + numNew - 1)
+        }
+
+    }
+
     private fun registerReceiver() {
         smsReceiver = object : BroadcastReceiver() {
 
@@ -111,29 +127,16 @@ class MainActivity : AppCompatActivity() {
             override fun onReceive(context: Context, intent: Intent) {
                 val bundle = intent.extras
                 if (bundle != null) {
-                    val msgs: Array<SmsMessage>
-                    val format = bundle.getString("format")
-                    val pdus = bundle.get(PDU_TYPE) as Array<*>?
-                    if (pdus != null) {
-                        val isVersionM = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                        var i = 0
-                        msgs = Array(pdus.size) {
-                            if (isVersionM) {
-                                SmsMessage.createFromPdu(pdus[i++] as ByteArray, format)
-                            } else {
-                                SmsMessage.createFromPdu(pdus[i++] as ByteArray)
-                            }
-                        }
-                        for (j in 0 until msgs.size) {
-                            val msg = Message(msgs[j].messageBody, msgs[j].originatingAddress!!)
-                            dbHelper!!.insertWithNumber(msg)
-                            addMessage(msg)
-                        }
+                    val body = bundle.getString(BODY)
+                    val sender = bundle.getString(SENDER)
+                    val time = bundle.getLong(TIME)
+                    if (body != null && sender != null) {
+                        addMessage(Message(body, sender, Date(time)))
                     }
                 }
             }
         }
-        registerReceiver(smsReceiver, IntentFilter("android.provider.Telephony.SMS_RECEIVED"))
+        registerReceiver(smsReceiver, IntentFilter(NEW_SMS_INTENT))
     }
 
     override fun onStop() {
