@@ -23,16 +23,18 @@ DROP TABLE IF EXISTS ${Contact.TABLE_NAME}
     object Message {
         const val TABLE_NAME = "message"
         const val TEXT = "content"
-        const val SENDER = "sender"
+        const val CONVERSATION = "conversation"
         const val TIME = "time"
+        const val INBOUND = "inbound"
     }
 
     const val CREATE_MESSAGE_TABLE = """
 CREATE TABLE ${Message.TABLE_NAME} (${BaseColumns._ID} INTEGER PRIMARY KEY,
-                                    ${Message.SENDER} INTEGER,
+                                    ${Message.CONVERSATION} INTEGER,
+                                    ${Message.INBOUND} BOOLEAN,
                                     ${Message.TEXT} TEXT,
                                     ${Message.TIME} DATETIME,
-FOREIGN KEY(${Message.SENDER}) REFERENCES ${Contact.TABLE_NAME}(${BaseColumns._ID}))
+FOREIGN KEY(${Message.CONVERSATION}) REFERENCES ${Contact.TABLE_NAME}(${BaseColumns._ID}))
 """
 
     const val DELETE_MESSAGE_TABLE = """

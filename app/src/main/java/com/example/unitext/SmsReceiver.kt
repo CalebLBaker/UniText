@@ -10,7 +10,8 @@ import android.telephony.SmsMessage
 
 const val NEW_SMS_INTENT = "com.example.unitext.NEW_SMS"
 const val BODY = "body"
-const val SENDER = "sender"
+const val SENDER_NAME = "sender_name"
+const val SENDER_ID = "sender_id"
 const val TIME = "time"
 
 class SmsReceiver : BroadcastReceiver() {
@@ -34,11 +35,12 @@ class SmsReceiver : BroadcastReceiver() {
                 }
                 for (j in 0 until msgs.size) {
                     val msg = Message(msgs[j].messageBody, msgs[j].originatingAddress!!)
-                    val sender = UnitextDbHelper(context).insertWithNumber(msg)
+                    val sender = UnitextDbHelper(context).insertMessageWithNumber(msg.text, msg.time, msg.sender, true)
                     val newIntent = Intent(NEW_SMS_INTENT)
                     val extras = Bundle()
                     extras.putString(BODY, msg.text)
-                    extras.putString(SENDER, sender)
+                    extras.putString(SENDER_NAME, sender.name ?: sender.number)
+                    extras.putLong(SENDER_ID, sender.id)
                     extras.putLong(TIME, msg.time.time)
                     newIntent.putExtras(extras)
                     context.sendBroadcast(newIntent)
